@@ -1,0 +1,860 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ibu Superstar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Layout: one pastel "dollhouse" column. Menu with three level cards. Game screen = HUD + mom row,
+   then either the house cutaway (mom walks between rooms) or a close-up room scene (Sims-style). */
+:root{
+  --bg:#FFEFF3; --dot:#FFD3DF; --card:#FFFFFF;
+  --ink:#5A3A52; --ink-soft:#8C6C84;
+  --pink:#FF86AA; --pink-deep:#E6507F; --mint:#74D9BB; --butter:#FFD56B; --lav:#B9A0FF; --sky:#80C8FF;
+  --ok:#5CCB9B; --warn:#FFB347; --crit:#FF5F6D;
+  --r-dapur:#FFE9B5; --r-tamu:#D2F5E8; --r-anak:#FFD9E5; --r-mandi:#D4ECFF; --r-ampai:#E6DBFF; --r-tidur:#FFDFCB;
+  --roof-a:#FF86AA; --roof-b:#FF9DBA;
+  --line:rgba(90,58,82,.14);
+  --font-display:'Fredoka','Baloo 2','Trebuchet MS',system-ui,sans-serif;
+  --font-body:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background-color:var(--bg);
+  background-image:radial-gradient(var(--dot) 1.6px,transparent 1.8px);background-size:24px 24px;
+  color:var(--ink);font:800 16px/1.4 var(--font-body);
+  padding-block:12px 28px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation;padding:0}
+button:focus-visible{outline:3px solid var(--lav);outline-offset:2px}
+#app{max-width:520px;margin:0 auto}
+small{font-weight:700;color:var(--ink-soft)}
+
+/* ---------- Menu ---------- */
+.hero{position:relative;height:150px;display:grid;place-items:center}
+.hero-av{width:96px;height:96px;border-radius:50%;background:var(--card);border:5px solid var(--pink);
+  display:grid;place-items:center;font-size:54px;box-shadow:0 6px 0 var(--line);animation:bob 2.6s ease-in-out infinite}
+.orb{position:absolute;font-size:34px;animation:bob 3s ease-in-out infinite}
+.o1{left:12%;top:18px;animation-delay:-.4s}.o2{right:12%;top:10px;animation-delay:-1.2s}
+.o3{left:20%;bottom:6px;animation-delay:-2s}.o4{right:21%;bottom:4px;animation-delay:-.8s}
+h1{margin:0;text-align:center;font:700 clamp(36px,11vw,50px)/1.05 var(--font-display);color:var(--pink-deep);
+  text-shadow:0 3px 0 #fff,0 6px 0 rgba(230,80,127,.22);text-wrap:balance}
+.sub{margin:8px auto 0;max-width:34ch;text-align:center;color:var(--ink-soft);font-weight:700}
+.av-label{margin:18px 0 8px;text-align:center;font:600 13px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.av-row{display:flex;justify-content:center;gap:12px}
+.av{width:62px;height:62px;border-radius:50%;background:var(--card);font-size:34px;border:4px solid transparent;box-shadow:0 4px 0 var(--line)}
+.av.on{border-color:var(--pink)}
+.levels{display:grid;gap:12px;margin-top:18px}
+.lvl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;
+  background:var(--card);border-radius:24px;padding:12px 14px;box-shadow:0 5px 0 var(--line);border:3px solid transparent}
+.lvl:not(:disabled):active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
+.lvl:disabled{opacity:.6;cursor:not-allowed}
+.lvl-badge{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;font-size:30px;background:var(--mint)}
+.l-sederhana .lvl-badge{background:var(--butter)}.l-pakar .lvl-badge{background:var(--pink)}
+.lvl-main{display:grid;gap:3px;min-width:0}
+.lvl-name{font:600 22px/1.1 var(--font-display)}
+.lvl-desc{font-weight:700;font-size:13px;color:var(--ink-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.chips i{font-style:normal;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--ink)}
+.lvl-side{display:grid;justify-items:end;gap:2px}
+.lvl-stars{color:var(--butter);font-size:20px;letter-spacing:1px;text-shadow:0 1px 0 rgba(90,58,82,.25)}
+.toggles{display:flex;justify-content:center;gap:8px;margin-top:16px}
+.tog{padding:7px 14px;border-radius:99px;background:var(--card);box-shadow:0 3px 0 var(--line);font-size:13px;opacity:.7}
+.tog.on{opacity:1;background:var(--butter)}
+.foot{margin:16px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+
+/* ---------- HUD ---------- */
+.hud{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.icon-btn{width:42px;height:42px;border-radius:14px;background:var(--card);box-shadow:0 3px 0 var(--line);font-size:18px}
+.hud-title{display:grid;min-width:0}
+.hud-title b{font:600 18px/1.1 var(--font-display)}
+.hud-title span{font-size:12px;color:var(--ink-soft);font-weight:800;font-variant-numeric:tabular-nums}
+.score{text-align:right;display:grid}
+.score span{font:700 26px/1 var(--font-display);color:var(--pink-deep);font-variant-numeric:tabular-nums}
+.score small{height:14px;font-size:12px;font-weight:800;color:var(--ink)}
+.day{margin-top:10px}
+.day-track{position:relative;height:14px;border-radius:99px;background:var(--card);box-shadow:inset 0 2px 0 var(--line)}
+.day-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--butter),var(--pink))}
+.sun{position:absolute;top:-8px;left:0;font-size:24px;transform:translateX(-50%);line-height:1}
+.phases{display:grid;grid-template-columns:repeat(4,1fr);margin-top:6px;text-align:center;font-size:11px;font-weight:800;color:var(--ink-soft)}
+.phases span{opacity:.55}.phases span.on{opacity:1;color:var(--ink)}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.meter{background:var(--card);border-radius:16px;padding:6px 9px 8px;box-shadow:0 3px 0 var(--line);min-width:0}
+.m-top{display:flex;align-items:center;gap:5px;font-size:12px}
+.m-top b{font-weight:800;white-space:nowrap}
+.m-bar{height:10px;border-radius:99px;background:var(--bg);margin-top:4px;overflow:hidden}
+.m-bar i{display:block;height:100%;width:100%;border-radius:99px;background:var(--c)}
+.m-energy{--c:var(--butter)}.m-clean{--c:var(--mint)}.m-happy{--c:var(--pink)}
+.meter.low .m-bar i{background:var(--crit)}
+.meter.low{animation:shake .5s infinite}
+
+/* ---------- Mom row ---------- */
+.mom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:12px}
+.mom-av{position:relative;width:54px;height:54px;border-radius:50%;background:var(--card);border:4px solid var(--pink);display:grid;place-items:center;font-size:28px}
+.mom-av i{position:absolute;right:-6px;bottom:-4px;font-style:normal;font-size:16px;background:var(--card);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;box-shadow:0 2px 0 var(--line)}
+.bubble{position:relative;background:var(--card);border-radius:18px;padding:8px 12px;font-size:13px;line-height:1.3;box-shadow:0 3px 0 var(--line);min-height:40px;display:flex;align-items:center}
+.bubble::before{content:"";position:absolute;left:-7px;top:50%;margin-top:-7px;border:7px solid transparent;border-left:0;border-right-color:var(--card)}
+.bubble.talk{animation:talk .35s}
+.rest{position:relative;overflow:hidden;display:grid;justify-items:center;gap:0;width:64px;height:54px;border-radius:18px;background:var(--lav);box-shadow:0 4px 0 rgba(90,58,82,.2);font-size:20px;line-height:1.1;padding-top:5px}
+.rest b{font:600 12px var(--font-display)}
+.rest::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.65);transform-origin:bottom;transform:scaleY(var(--cd,0))}
+.rest:active{transform:translateY(2px)}
+
+/* ---------- House (cutaway) ---------- */
+.play{position:relative;margin-top:12px}
+.roof{margin:0 10px;height:38px;display:grid;place-items:center;
+  background:repeating-linear-gradient(90deg,var(--roof-a) 0 24px,var(--roof-b) 24px 48px);
+  clip-path:polygon(7% 0,93% 0,100% 100%,0 100%);color:#fff;font:600 15px var(--font-display);text-shadow:0 2px 0 rgba(90,58,82,.25)}
+.house{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:var(--card);border-radius:0 0 26px 26px;border:3px solid var(--roof-a);border-top:0;box-shadow:0 6px 0 var(--line)}
+.room{position:relative;min-height:118px;border-radius:18px;background:var(--rc);overflow:hidden}
+.floor{position:absolute;left:0;right:0;bottom:0;height:24px;background:rgba(90,58,82,.11);display:flex;align-items:center;padding-left:10px}
+.floor span{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+.room-ico{position:absolute;right:10px;top:8px;font-size:34px;opacity:.35}
+.slot{position:absolute;left:0;right:0;top:0;bottom:24px}
+.mom-pin{position:absolute;width:40px;height:40px;display:grid;place-items:center;font-size:32px;line-height:1;pointer-events:none;z-index:3;
+  transition:left var(--wt,.7s) ease-in-out,top var(--wt,.7s) ease-in-out;filter:drop-shadow(0 3px 0 rgba(90,58,82,.18))}
+.mom-pin.walk{animation:waddle .3s infinite}
+.task{position:absolute;inset:0;width:100%;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center;text-align:left;
+  padding:8px 10px 16px;border-radius:18px;background:rgba(255,255,255,.95);border:3px solid var(--tc);animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.task:active{transform:scale(.96)}
+.task.leave{pointer-events:none;animation:leave .22s forwards}
+.t-daily{--tc:var(--mint)}.t-weekly{--tc:var(--sky)}.t-kids{--tc:var(--butter)}.t-sick{--tc:var(--lav)}
+.t-sick{background:#FBF6FF}
+.emo{font-size:36px;line-height:1;width:46px;text-align:center}
+.txt{display:grid;gap:3px;min-width:0}
+.tag{justify-self:start;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 8px;border-radius:99px;background:var(--tc)}
+.tname{font:600 14.5px/1.15 var(--font-display)}
+.dots{display:flex;gap:4px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--tc);box-shadow:0 0 0 2px rgba(90,58,82,.12)}
+.pbar{position:absolute;left:12px;right:52px;bottom:6px;height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar b{display:block;height:100%;width:100%;border-radius:99px;background:var(--ok)}
+.task.warn .pbar b{background:var(--warn)}
+.task.crit .pbar b{background:var(--crit)}
+.task.crit{animation:shake .4s infinite}
+
+/* ---------- Room scene (close-up) ---------- */
+.stage{position:relative;height:186px;border-radius:26px;overflow:hidden;border:3px solid var(--card);box-shadow:0 5px 0 var(--line);
+  background:linear-gradient(var(--wall) 0 66%,rgba(90,58,82,.16) 66% 68%,var(--floor) 68%)}
+.stage::after{content:"";position:absolute;inset:0;background:var(--tint,transparent);pointer-events:none;z-index:2}
+.sc-deco span{position:absolute;line-height:1}
+.sc-mom{position:absolute;left:6%;bottom:8px;font-size:72px;line-height:1;z-index:1;filter:drop-shadow(0 5px 0 rgba(90,58,82,.15))}
+.sc-mom i{position:absolute;right:-22px;top:2px;font-style:normal;font-size:30px}
+.sc-mom i.bump{animation:bumpf2 .3s}
+.sc-focus{position:absolute;left:56%;top:46%;transform:translate(-50%,-50%);font-size:84px;line-height:1;z-index:1;filter:drop-shadow(0 6px 0 rgba(90,58,82,.15))}
+.sc-focus.bump{animation:bumpf .32s}
+.sc-chip{position:absolute;top:10px;z-index:3;background:rgba(255,255,255,.92);border-radius:99px;padding:5px 12px;font:600 13px var(--font-display);box-shadow:0 2px 0 var(--line);max-width:62%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sc-back{left:10px}
+#sc-name{right:10px}
+.sc-time{position:absolute;left:0;right:0;bottom:0;height:9px;background:rgba(90,58,82,.18);z-index:3}
+.sc-time i{display:block;height:100%;width:100%;background:var(--ok)}
+.sc-time.warn i{background:var(--warn)}.sc-time.crit i{background:var(--crit)}
+.sc-done{position:absolute;inset:0;z-index:4;display:grid;place-items:center;background:rgba(255,255,255,.6);font:700 36px var(--font-display);color:var(--pink-deep);animation:pop .3s}
+.instr{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;text-align:center}
+.instr b{font:600 19px/1.2 var(--font-display)}
+.sc-dots{display:flex;gap:4px}
+.sc-dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.sc-dots i.on{background:var(--ok)}
+.tray{display:grid;grid-template-columns:repeat(auto-fit,minmax(66px,78px));justify-content:center;gap:8px;margin-top:10px}
+.opt{height:70px;border-radius:20px;background:var(--card);box-shadow:0 4px 0 var(--line);font-size:34px;border:3px solid transparent}
+.opt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.opt.hint{animation:glow 1s ease-in-out infinite}
+.opt.wrong{animation:shake .3s;background:#FFE1E4}
+.opt.right{background:#DDF8EC}
+.queue{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding:2px 2px 6px;align-items:stretch;min-height:64px}
+.queue>small{align-self:center;margin:0 auto}
+.q{flex:0 0 auto;width:78px;display:grid;justify-items:center;align-content:center;gap:2px;background:var(--card);border-radius:16px;padding:6px 4px 8px;border:3px solid var(--tc);box-shadow:0 3px 0 var(--line)}
+.q span{font-size:24px;line-height:1}
+.q small{font-size:10px;white-space:nowrap}
+.qb{display:block;width:90%;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.qb b{display:block;height:100%;width:100%;background:var(--ok)}
+
+/* ---------- Effects ---------- */
+.bonus{position:absolute;z-index:4;width:54px;height:54px;border-radius:50%;background:var(--card);border:4px solid var(--butter);font-size:28px;display:grid;place-items:center;box-shadow:0 4px 0 var(--line);animation:pop .3s cubic-bezier(.3,1.6,.5,1),bob 1s ease-in-out .3s infinite}
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:6}
+.spark{position:absolute;font-size:20px;animation:spark .85s ease-out forwards}
+.ftxt{position:absolute;transform:translate(-50%,-50%);font:700 22px var(--font-display);color:var(--pink-deep);text-shadow:0 2px 0 #fff,0 -1px 0 #fff,1px 0 0 #fff,-1px 0 0 #fff;animation:rise .9s ease-out forwards;white-space:nowrap}
+.ftxt.bad{color:var(--crit)}
+
+/* ---------- Overlay ---------- */
+.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(90,58,82,.5);backdrop-filter:blur(3px);
+  padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet{width:100%;max-width:420px;max-height:100%;overflow:auto;background:var(--card);border-radius:30px;padding:22px 20px;text-align:center;box-shadow:0 8px 0 var(--line);animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.sheet h2{margin:6px 0 4px;font:700 28px/1.1 var(--font-display);color:var(--pink-deep);text-wrap:balance}
+.sheet p{margin:6px 0;color:var(--ink-soft);font-weight:700}
+.sheet .big{font-size:56px;line-height:1}
+.how{display:grid;gap:8px;margin:14px 0;text-align:left}
+.how div{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:var(--bg);border-radius:16px;padding:8px 12px;font-size:14px;color:var(--ink)}
+.how span{font-size:22px}
+.btn{display:block;width:100%;margin-top:10px;padding:13px 16px;border-radius:20px;background:var(--pink);color:#fff;font:600 19px var(--font-display);box-shadow:0 5px 0 var(--pink-deep);text-shadow:0 2px 0 rgba(90,58,82,.25)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--pink-deep)}
+.btn.alt{background:var(--bg);color:var(--ink);box-shadow:0 5px 0 var(--line);text-shadow:none}
+.stars{font-size:46px;letter-spacing:4px;color:var(--butter);text-shadow:0 3px 0 rgba(90,58,82,.22)}
+.stars .off{color:var(--line);text-shadow:none}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.stats div{background:var(--bg);border-radius:16px;padding:8px}
+.stats b{display:block;font:700 24px/1.1 var(--font-display);color:var(--ink);font-variant-numeric:tabular-nums}
+.stats small{font-size:12px}
+.thanks{font-size:13px}
+
+@keyframes bob{50%{transform:translateY(-7px)}}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes leave{to{transform:scale(.7);opacity:0}}
+@keyframes shake{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+@keyframes talk{from{transform:scale(.94)}}
+@keyframes waddle{25%{transform:rotate(-9deg) translateY(-3px)}75%{transform:rotate(9deg) translateY(-3px)}}
+@keyframes bumpf{40%{transform:translate(-50%,-50%) scale(1.25)}}
+@keyframes bumpf2{40%{transform:scale(1.4) rotate(-10deg)}}
+@keyframes glow{50%{box-shadow:0 0 0 5px rgba(255,213,107,.85),0 4px 0 var(--line)}}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.4);opacity:0}}
+@keyframes rise{from{opacity:1}to{transform:translate(-50%,-90px);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<div id="app">
+  <section id="menu">
+    <div class="hero">
+      <span class="orb o1">🧺</span><span class="orb o2">🍼</span><span class="orb o3">🧹</span><span class="orb o4">🍳</span>
+      <div class="hero-av" id="hero-av">🧕🏻</div>
+    </div>
+    <h1>Ibu Superstar</h1>
+    <p class="sub">Urus rumah, jaga anak dan suami. Dari pagi sampai anak tidur.</p>
+    <div class="av-label">Pilih watak ibu</div>
+    <div class="av-row" id="av-row"></div>
+    <div class="levels" id="levels"></div>
+    <div class="toggles" id="tog-menu"></div>
+    <p class="foot">Ketuk gelembung tugasan. Ibu akan berjalan ke bilik itu.</p>
+  </section>
+
+  <section id="game" hidden>
+    <div class="hud">
+      <button id="pause" class="icon-btn" type="button" aria-label="Jeda">⏸</button>
+      <div class="hud-title"><b id="h-lvl"></b><span id="h-clock"></span></div>
+      <div class="score"><span id="h-score">0</span><small id="h-combo"></small></div>
+    </div>
+    <div class="day">
+      <div class="day-track"><div class="day-fill" id="day-fill"></div><span class="sun" id="sun">☀️</span></div>
+      <div class="phases" id="phases"><span>🌅 Pagi</span><span>☀️ Tengah hari</span><span>🌇 Petang</span><span>🌙 Malam</span></div>
+    </div>
+    <div class="meters">
+      <div class="meter m-energy" id="mt-energy"><div class="m-top"><span>⚡</span><b>Tenaga</b></div><div class="m-bar"><i id="b-energy"></i></div></div>
+      <div class="meter m-clean" id="mt-clean"><div class="m-top"><span>✨</span><b>Bersih</b></div><div class="m-bar"><i id="b-clean"></i></div></div>
+      <div class="meter m-happy" id="mt-happy"><div class="m-top"><span>💖</span><b>Gembira</b></div><div class="m-bar"><i id="b-happy"></i></div></div>
+    </div>
+    <div class="mom">
+      <div class="mom-av"><span id="g-av">🧕🏻</span><i id="mood">✨</i></div>
+      <div class="bubble" id="say">Jom mulakan hari!</div>
+      <button id="rest" class="rest" type="button" aria-label="Rehat sekejap">🍵<b>Rehat</b></button>
+    </div>
+
+    <div class="play" id="play">
+      <div id="house-block">
+        <div class="roof"><span>🏡 Rumah Kita</span></div>
+        <div class="house" id="house"></div>
+      </div>
+      <div id="scene" hidden>
+        <div class="stage" id="stage">
+          <button class="sc-chip" id="sc-back" type="button">⬅ Keluar</button>
+          <span class="sc-chip" id="sc-name"></span>
+          <div class="sc-deco" id="sc-deco"></div>
+          <div class="sc-mom"><span id="sc-av">🧕🏻</span><i id="sc-act"></i></div>
+          <div class="sc-focus" id="sc-focus"></div>
+          <div class="sc-time" id="sc-time"><i id="sc-bar"></i></div>
+          <div class="sc-done" id="sc-done" hidden>✨ Siap!</div>
+        </div>
+        <div class="instr"><span class="sc-dots" id="sc-dots"></span><b id="sc-instr"></b></div>
+        <div class="tray" id="tray"></div>
+        <div class="queue" id="queue"></div>
+      </div>
+      <div class="fx" id="fx"></div>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay" hidden><div class="sheet" id="sheet"></div></div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r)=>(r||document).querySelector(s);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const x=a[i];a[i]=a[j];a[j]=x;}return a;};
+
+/* ---------- Save ---------- */
+const AVS=['🧕🏻','👩🏻'];
+let save={av:AVS[0],stars:{},best:{},sfx:true,music:true};
+try{
+  const raw=JSON.parse(localStorage.getItem('ibu-superstar')||'null');
+  if(raw&&typeof raw==='object'){
+    save.av=(raw.av==='👩'||raw.av==='👩🏻')?'👩🏻':'🧕🏻';
+    save.stars=raw.stars||{}; save.best=raw.best||{};
+    if(raw.sfx===false) save.sfx=false;
+    if(raw.music===false) save.music=false;
+  }
+}catch(e){}
+function persist(){try{localStorage.setItem('ibu-superstar',JSON.stringify(save))}catch(e){}}
+
+/* ---------- Sound (WebAudio, synthesised) ---------- */
+let AC=null, master=null, musT=null, beat=0;
+function audio(){
+  if(AC===null){
+    try{const C=window.AudioContext||window.webkitAudioContext;AC=new C();master=AC.createGain();master.gain.value=.55;master.connect(AC.destination);}catch(e){AC=false;}
+  }
+  if(AC&&AC.state==='suspended'){try{AC.resume()}catch(e){}}
+  return AC;
+}
+function tone(f,t0,d,type,vol,slide){
+  if(!AC) return;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type||'sine'; o.frequency.setValueAtTime(f,t0);
+  if(slide) o.frequency.exponentialRampToValueAtTime(slide,t0+d);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.012); g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+  o.connect(g); g.connect(master); o.start(t0); o.stop(t0+d+.03);
+}
+function sfx(n){
+  if(!save.sfx||!audio()) return;
+  const t=AC.currentTime;
+  switch(n){
+    case 'click': tone(820,t,.06,'sine',.12); break;
+    case 'tap': tone(620,t,.08,'sine',.16,900); break;
+    case 'ok': tone(660,t,.1,'triangle',.18); tone(990,t+.08,.16,'triangle',.18); break;
+    case 'bad': tone(280,t,.2,'triangle',.2,150); break;
+    case 'enter': tone(440,t,.12,'sine',.14,880); tone(660,t+.08,.14,'sine',.1,1100); break;
+    case 'walk': for(let i=0;i<4;i++) tone(i%2?1150:950,t+i*.14,.05,'sine',.07); break;
+    case 'done': [523,659,784,1047].forEach((f,k)=>{tone(f,t+k*.075,.22,'sine',.2);tone(f*2,t+k*.075,.12,'triangle',.05);}); break;
+    case 'miss': tone(420,t,.16,'triangle',.18,330); tone(300,t+.16,.28,'triangle',.18,210); break;
+    case 'rest': [1047,1319,1568,2093].forEach((f,k)=>tone(f,t+k*.06,.18,'sine',.1)); break;
+    case 'bonus': tone(880,t,.1,'sine',.2); tone(1320,t+.09,.22,'sine',.2); break;
+    case 'bell': tone(784,t,.45,'sine',.14); tone(1175,t+.14,.55,'sine',.1); break;
+    case 'sick': tone(494,t,.18,'sine',.16); tone(392,t+.18,.32,'sine',.16); break;
+    case 'start': [523,659,784].forEach((f,k)=>tone(f,t+k*.1,.2,'triangle',.18)); break;
+    case 'win': [523,659,784,1047,1319].forEach((f,k)=>{tone(f,t+k*.11,.3,'sine',.2);tone(f*2,t+k*.11,.15,'triangle',.05);}); break;
+    case 'lose': [440,392,349,294].forEach((f,k)=>tone(f,t+k*.16,.3,'triangle',.17)); break;
+  }
+}
+const SCALE=[523.25,587.33,659.25,783.99,880,1046.5], BASS=[130.81,164.81,196,164.81];
+function musicTick(){
+  if(!AC||!save.music||document.hidden) return;
+  const t=AC.currentTime+.05; beat++;
+  if(beat%4===1) tone(BASS[(beat>>2)%4],t,.95,'sine',.05);
+  if(Math.random()<.7){const f=pick(SCALE);tone(f,t,.5,'sine',.045);tone(f*2,t,.25,'triangle',.012);}
+}
+function musicOn(){musicOff();if(save.music&&audio()) musT=setInterval(musicTick,430);}
+function musicOff(){if(musT){clearInterval(musT);musT=null;}}
+
+/* ---------- Data ---------- */
+const ROOMS={
+  dapur:{name:'Dapur',ico:'🍳',c:'--r-dapur',wall:'#FFE9B5',floor:'#EBC17A',
+    deco:[['🪟',8,10,38],['🕰️',46,8,26],['🫖',84,48,32],['🥕',64,74,20],['🧺',30,72,22]],
+    pool:['🥚','🔪','🍳','🧂','🥄','🍚','🥘','🧽','🚿','🍲','🛒','🥬','🧅','🍽️','🫖']},
+  tamu:{name:'Ruang Tamu',ico:'🛋️',c:'--r-tamu',wall:'#D2F5E8',floor:'#B3DDC9',
+    deco:[['🪟',8,10,38],['📺',46,10,30],['🛋️',80,46,52],['🪴',90,12,28]],
+    pool:['🧹','🗑️','🧸','📦','💧','🧽','🧻','🪣','🍪','🧺','🧴']},
+  anak:{name:'Bilik Anak',ico:'🧸',c:'--r-anak',wall:'#FFD9E5',floor:'#F2B8CB',
+    deco:[['🌈',8,10,38],['⭐',46,8,22],['🎈',88,10,28],['🛏️',78,46,48]],
+    pool:['🥣','🥄','🧷','👶','🍼','🤗','🖍️','🧽','🧸','🌡️','💊','🧊','🍎','🧴']},
+  mandi:{name:'Bilik Mandi',ico:'🛁',c:'--r-mandi',wall:'#D4ECFF',floor:'#A9D2F0',
+    deco:[['🪞',8,10,34],['🧻',46,14,22],['🚿',86,14,42],['🛁',74,52,50]],
+    pool:['🛁','🧴','🧼','🪥','🚽','🧻','🚿','🥤','🧽','🧺','🥛']},
+  ampai:{name:'Ampaian',ico:'👕',c:'--r-ampai',wall:'#E6DBFF',floor:'#C9B8F0',
+    deco:[['☁️',10,8,36],['☀️',84,6,40],['👖',34,30,26],['🧦',60,30,22]],
+    pool:['👕','☀️','👚','🧺','🧦','🧷','👖','🧼','🌧️','🧥']},
+  tidur:{name:'Bilik Tidur',ico:'🛏️',c:'--r-tidur',wall:'#FFDFCB',floor:'#F0BE9D',
+    deco:[['🖼️',8,10,32],['🪴',44,26,24],['🌙',88,8,30],['🛏️',74,48,60]],
+    pool:['🌙','🎵','👔','♨️','🛏️','🧺','🍵','💊','🛌','🧸','📖','🧣']}
+};
+const ORDER=['dapur','tamu','anak','mandi','ampai','tidur'];
+const TAG={daily:'Harian',weekly:'Mingguan',kids:'Drama anak',sick:'Sakit'};
+const A=[0,1,2,3];
+function T(id,room,type,m,ph,ico,name,story,focus,steps,say){
+  return {id,room,type,m,ph,ico,name,story,focus,steps:steps.map(s=>({use:s[0],do:s[1]})),say};
+}
+const TASKS=[
+  // harian
+  T('sarapan','dapur','daily','h',[0],'🍳','Masak sarapan','Perut semua dah berbunyi. Sarapan mesti siap!',['🥚','🥣','🍳','🍽️'],[['🥚','Pecahkan telur'],['🍳','Goreng dalam kuali'],['🍽️','Hidangkan di pinggan']]),
+  T('pinggan','dapur','daily','c',[0,1,2],'🍽️','Basuh pinggan','Singki penuh dengan pinggan kotor.',['🍽️','🧼','✨'],[['🧽','Sabunkan dengan span'],['🚿','Bilas dengan air']]),
+  T('tghari','dapur','daily','h',[1],'🍲','Masak tengah hari','Suami dan anak nak makan tengah hari.',['🥬','🥕','🍲','🍛'],[['🔪','Hiris sayur'],['🍲','Masak dalam periuk'],['🍚','Hidang dengan nasi']]),
+  T('malam','dapur','daily','h',[2,3],'🥘','Masak makan malam','Hari dah petang. Makan malam perlu siap.',['🧅','🍳','🥘','🍛'],[['🧅','Tumis bawang'],['🥘','Masukkan lauk'],['🍽️','Hidangkan di meja']]),
+  T('suap','anak','daily','h',[0,1,2],'🥣','Suap anak','Si kecil lapar, mulut dah terbuka luas.',['👶','🥣','😋'],[['🥣','Sediakan bubur'],['🥄','Suap sikit-sikit']]),
+  T('lampin','anak','daily','h',A,'🧷','Tukar lampin','Hmm... ada bau tak sedap dari katil bayi.',['😖','🧷','😊'],[['🧷','Buka lampin lama'],['👶','Pakaikan lampin baru']]),
+  T('mainan','tamu','daily','c',[1,2,3],'🧸','Kemas mainan','Mainan bersepah di lantai ruang tamu.',['🧩','🧸','📦'],[['🧸','Kutip mainan'],['📦','Masukkan dalam kotak']]),
+  T('sapu','tamu','daily','c',[1,2],'🧹','Sapu lantai','Serbuk biskut ada di mana-mana.',['🍪','🧹','✨'],[['🧹','Sapu serbuk'],['🗑️','Buang dalam tong']]),
+  T('jemur','ampai','daily','c',[0,1],'👕','Jemur baju','Cuaca cerah. Masa jemur baju!',['🧺','👕','☀️'],[['👕','Sidai baju basah'],['☀️','Biar kena matahari']]),
+  T('lipat','ampai','daily','c',[2,3],'👚','Lipat baju','Baju kering menanti untuk dilipat.',['👕','👚','🧺'],[['👚','Lipat baju kemas'],['🧺','Susun dalam bakul']]),
+  T('mandianak','mandi','daily','h',[0,2],'🛁','Mandikan anak','Waktu mandi! Si kecil suka main air.',['👶','🛁','🧴','✨'],[['🛁','Isi air suam'],['🧴','Sabun badan anak'],['🚿','Bilas bersih']]),
+  T('tidurkan','tidur','daily','h',[3],'🌙','Tidurkan anak','Dah malam, anak mula menguap.',['🥱','🌙','😴'],[['🌙','Malapkan lampu'],['🎵','Nyanyikan lagu tidur']]),
+  // mingguan (1-4 kali seminggu)
+  T('mop','tamu','weekly','c',[1,2],'🧽','Mop lantai','Rutin mingguan: lantai nak berkilat!',['🟫','🧹','💧','✨'],[['🧹','Sapu dulu'],['💧','Celup mop dalam air'],['🧽','Mop sampai kering']]),
+  T('gosok','tidur','weekly','c',[1,2],'♨️','Gosok baju','Baju kerja suami berkedut.',['👔','♨️','✨'],[['👔','Letak baju atas papan'],['♨️','Gosok dengan seterika']]),
+  T('cadar','tidur','weekly','c',[0,1],'🛏️','Tukar cadar','Cadar dah seminggu. Masa tukar yang wangi.',['🛏️','🧺','🛏️','✨'],[['🛏️','Tanggalkan cadar lama'],['🧺','Letak dalam bakul'],['✨','Pasang cadar baru']]),
+  T('tandas','mandi','weekly','c',[1,2],'🚽','Cuci tandas','Giliran mingguan cuci tandas.',['🚽','🧴','🪥','✨'],[['🧴','Tuang pencuci'],['🪥','Gosok dengan berus'],['🚽','Flush dan lap']]),
+  T('beli','dapur','weekly','h',[0,1],'🛒','Beli barang dapur','Peti sejuk hampir kosong. Stok perlu diisi.',['🏪','🛒','🥬'],[['🛒','Ambil troli'],['🥬','Pilih sayur segar']]),
+  // drama anak
+  T('nangis','anak','kids','h',A,'😭','Anak menangis','Si kecil menangis kuat. Pujuk dia!',['😭','🤗','😊'],[['🤗','Peluk dia'],['🍼','Beri susu']],'Anak menangis! Peluk dulu 🤗'),
+  T('tumpah','tamu','kids','c',A,'💦','Air tumpah!','Anak tertumpah air atas lantai.',['💦','🧻','✨'],[['🧻','Lap dengan tisu'],['🧽','Lap sampai kering']],'Alamak, air tumpah atas lantai!'),
+  T('conteng','anak','kids','c',A,'🖍️','Dinding dicontengnya','Dinding jadi buku lukisan anak.',['🖍️','🧴','✨'],[['🧴','Sembur pencuci'],['🧽','Gosok sampai hilang']],'Siapa conteng dinding ni? 🖍️'),
+  // sakit
+  T('demam','anak','sick','h',A,'🤒','Anak demam','Dahi anak panas! Jaga dia betul-betul.',['🤒','🌡️','💊','😌'],[['🌡️','Ukur suhu badan'],['💊','Beri ubat demam'],['🧊','Tuam dahi']],'Anak demam! Cepat jaga dia 🌡️'),
+  T('selsema','tidur','sick','h',A,'🤧','Suami selsema','Suami bersin tak berhenti.',['🤧','🍵','💊','😌'],[['🍵','Buat teh halia panas'],['💊','Beri ubat'],['🛌','Suruh dia berehat']],'Suami selsema. Siapkan teh panas 🍵'),
+  T('muntah','mandi','sick','h',A,'🤢','Anak muntah','Anak muntah. Tenangkan dan bersihkan.',['🤢','🧻','🧼','😌'],[['🧻','Lap mulut anak'],['🧼','Bersihkan lantai'],['🥤','Beri air masak']],'Anak muntah! Bertenang ya 🥤')
+];
+
+const LEVELS=[
+  {id:'mudah',name:'Mudah',ico:'🌸',dur:60,spawn:[4,5.5],max:3,pat:1.5,cost:.5,walk:.4,regen:.45,decay:.12,rest:[26,8],opts:3,hint:true,w:{daily:1},sick:0,bonus:[9,14],
+   desc:'Kerja harian sahaja. Santai, masak dan jaga anak.',chips:['Harian'],
+   tip:'Alat yang betul akan bercahaya. Santai dulu.'},
+  {id:'sederhana',name:'Sederhana',ico:'🌼',dur:75,spawn:[2.8,4.2],max:4,pat:1.1,cost:.8,walk:.8,regen:.25,decay:.2,rest:[24,10],opts:4,hint:false,w:{daily:3,weekly:1.4,kids:1.6},sick:0,bonus:[11,17],
+   desc:'Tambah kerja mingguan: mop, gosok baju, cuci tandas. Anak mula buat drama.',chips:['Harian','Mingguan','Drama anak'],
+   tip:'Tiada cahaya petunjuk. Baca arahan, pilih alat yang betul.'},
+  {id:'pakar',name:'Pakar',ico:'🔥',dur:90,spawn:[2,3.2],max:5,pat:.85,cost:1.2,walk:1.2,regen:0,decay:.3,rest:[20,12],opts:6,hint:false,w:{daily:3,weekly:1.8,kids:2},sick:.28,bonus:[14,20],
+   desc:'Anak demam, suami selsema, kerja bertimbun. Tenaga cepat habis!',chips:['Harian','Mingguan','Drama anak','Sakit'],
+   tip:'Bila ada yang sakit, jaga mereka dulu. Salah pilih alat membazir masa dan tenaga.'}
+];
+const DAYS=['Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu','Ahad'];
+const PHASE_SAY=['Pagi! Sarapan dan baju kotor menunggu.','Tengah hari. Masa masak dan kemas.','Petang. Anak-anak perlu mandi.','Malam. Sikit lagi sebelum anak tidur.'];
+const TINT=['rgba(255,214,150,.2)','transparent','rgba(255,150,90,.22)','rgba(40,40,120,.32)'];
+const DONE_SAY=['Siap! 💪','Kemas! ✨','Hebatnya ibu!','Yeay, satu lagi!','Beres!'];
+const MISS_SAY=['Alamak, tak sempat!','Aduh, terlepas...','Nanti ibu buat balik.','Tak apa, teruskan!'];
+const FAIL_SAY={energy:'Ibu terlalu penat hari ini. Ibu pun perlu rehat, ya.',clean:'Rumah dah terlalu bersepah. Cuba utamakan kerja yang paling lama menunggu.',happy:'Semua dah merajuk. Cuba layan anak dan suami dulu.'};
+
+/* ---------- Menu ---------- */
+function togInner(){
+  return '<button type="button" class="tog'+(save.sfx?' on':'')+'" data-tog="sfx">'+(save.sfx?'🔊':'🔇')+' Bunyi</button>'+
+         '<button type="button" class="tog'+(save.music?' on':'')+'" data-tog="music">'+(save.music?'🎵':'🔕')+' Muzik</button>';
+}
+function refreshToggles(){document.querySelectorAll('.toggles').forEach(el=>{el.innerHTML=togInner();});}
+function renderMenu(){
+  $('#hero-av').textContent=save.av;
+  $('#av-row').innerHTML=AVS.map(a=>'<button type="button" class="av'+(a===save.av?' on':'')+'" data-av="'+a+'" aria-label="'+(a==='🧕🏻'?'Ibu bertudung':'Ibu tanpa tudung')+'">'+a+'</button>').join('');
+  $('#levels').innerHTML=LEVELS.map((L,i)=>{
+    const unlocked=i===0||(save.stars[LEVELS[i-1].id]||0)>=1;
+    const st=save.stars[L.id]||0, best=save.best[L.id];
+    return '<button type="button" class="lvl l-'+L.id+'" data-lvl="'+L.id+'"'+(unlocked?'':' disabled')+'>'+
+      '<span class="lvl-badge">'+(unlocked?L.ico:'🔒')+'</span>'+
+      '<span class="lvl-main"><span class="lvl-name">'+L.name+'</span><span class="lvl-desc">'+
+      (unlocked?L.desc:'Dapat sekurang-kurangnya 1 bintang di level '+LEVELS[i-1].name+' untuk buka.')+'</span>'+
+      (unlocked?'<span class="chips">'+L.chips.map(c=>'<i>'+c+'</i>').join('')+'</span>':'')+'</span>'+
+      '<span class="lvl-side"><span class="lvl-stars" aria-label="'+st+' bintang">'+'★'.repeat(st)+'☆'.repeat(3-st)+'</span>'+
+      (best?'<small>'+best+' mata</small>':'')+'</span></button>';}).join('');
+  refreshToggles();
+}
+
+/* ---------- Overlay ---------- */
+function showSheet(html){$('#sheet').innerHTML=html;$('#overlay').hidden=false;const b=$('#sheet .btn');if(b)b.focus();}
+function hideSheet(){$('#overlay').hidden=true;$('#sheet').innerHTML='';}
+const levelById=id=>LEVELS.filter(l=>l.id===id)[0];
+
+function openIntro(id){
+  const L=levelById(id);
+  showSheet('<div class="big">'+save.av+'</div><h2>'+L.ico+' Level '+L.name+'</h2><p>'+L.desc+'</p>'+
+   '<div class="how"><div><span>👆</span>Ketuk gelembung tugasan. Ibu berjalan ke bilik itu.</div>'+
+   '<div><span>🎬</span>Dalam bilik, pilih alat yang betul ikut arahan sehingga siap.</div>'+
+   '<div><span>⏳</span>Tugasan lain terus menunggu. Boleh keluar dan tukar bilik bila-bila.</div>'+
+   '<div><span>🍵</span>Tenaga terhad. Tekan Rehat bila penat, dan ketuk 🧋 bila suami hulur air.</div>'+
+   '<div><span>💡</span>'+L.tip+'</div></div>'+
+   '<button class="btn" type="button" data-act="go" data-lvl="'+id+'">Mula hari ini ▶</button>'+
+   '<button class="btn alt" type="button" data-act="close">Kembali</button>');
+}
+
+/* ---------- Game ---------- */
+let G=null, uid=0, last=0;
+const fx=$('#fx');
+
+function buildHouse(){
+  const h=$('#house'); h.innerHTML=''; G.rooms={};
+  ORDER.forEach(id=>{
+    const r=ROOMS[id];
+    const el=document.createElement('div'); el.className='room'; el.style.setProperty('--rc','var('+r.c+')');
+    el.innerHTML='<span class="room-ico" aria-hidden="true">'+r.ico+'</span><div class="slot"></div><div class="floor"><span>'+r.name+'</span></div>';
+    h.appendChild(el); G.rooms[id]={el:el,slot:$('.slot',el),task:null};
+  });
+  const pin=document.createElement('div'); pin.className='mom-pin'; pin.textContent=save.av; h.appendChild(pin); G.pin=pin;
+}
+function setPin(id,instant,dur){
+  if(!G||!G.pin||$('#house-block').hidden) return;
+  const r=G.rooms[id].el, p=G.pin;
+  p.style.setProperty('--wt',instant?'0s':(dur+'s'));
+  p.style.left=(r.offsetLeft+r.offsetWidth-46)+'px';
+  p.style.top=(r.offsetTop+r.offsetHeight-42)+'px';
+}
+
+function startGame(L){
+  hideSheet();
+  G={L:L,time:0,energy:100,clean:70,happy:70,score:0,combo:0,maxCombo:0,done:0,missed:0,tasks:[],rooms:{},
+     nextSpawn:.5,nextBonus:rnd(L.bonus[0],L.bonus[1]),restCd:0,paused:false,over:false,phase:-1,lastId:'',
+     day:pick(DAYS),bonus:null,lowSaid:-99,raf:0,mom:'tamu',walking:false,walkT:0,scene:null,busy:false,q:{},pin:null};
+  $('#menu').hidden=true; $('#game').hidden=false;
+  $('#scene').hidden=true; $('#house-block').hidden=false;
+  fx.innerHTML='';
+  const old=$('#play .bonus'); if(old) old.remove();
+  buildHouse(); setPin('tamu',true);
+  $('#h-lvl').textContent=L.ico+' '+L.name;
+  $('#g-av').textContent=save.av; $('#sc-av').textContent=save.av;
+  $('#h-score').textContent='0'; $('#h-combo').textContent='';
+  $('#rest').style.setProperty('--cd',0);
+  lastScore=-1; lastCombo=-1;
+  say('Jom mulakan hari!');
+  spawn(); spawn();
+  updateHud();
+  sfx('start'); musicOn();
+  window.scrollTo(0,0);
+  last=performance.now(); G.raf=requestAnimationFrame(frame);
+}
+
+function say(msg){const b=$('#say');b.textContent=msg;b.classList.remove('talk');void b.offsetWidth;b.classList.add('talk');}
+
+function pickTask(){
+  const L=G.L, ph=Math.max(0,G.phase);
+  const base=TASKS.filter(t=>{
+    const ok=t.type==='sick'?L.sick>0:(L.w[t.type]||0)>0;
+    return ok&&!G.rooms[t.room].task&&t.id!==G.lastId;});
+  let chosen=null;
+  const sickActive=G.tasks.some(t=>t.def.type==='sick');
+  if(L.sick>0&&!sickActive&&G.time>6&&Math.random()<L.sick){
+    const s=base.filter(t=>t.type==='sick'); if(s.length) chosen=pick(s);
+  }
+  if(!chosen){
+    let pool=base.filter(t=>t.type!=='sick'&&t.ph.indexOf(ph)>-1);
+    if(!pool.length) pool=base.filter(t=>t.type!=='sick');
+    if(!pool.length) return null;
+    const tot=pool.reduce((a,t)=>a+L.w[t.type],0); let r=Math.random()*tot;
+    for(let i=0;i<pool.length;i++){r-=L.w[pool[i].type]; if(r<=0){chosen=pool[i];break;}}
+    chosen=chosen||pool[0];
+  }
+  G.lastId=chosen.id; return chosen;
+}
+
+function spawn(){
+  const def=pickTask(); if(!def) return false;
+  const room=G.rooms[def.room];
+  const tmax=(def.steps.length*4.2+9+(def.type==='sick'?4:0))*G.L.pat;
+  const el=document.createElement('button'); el.type='button'; el.className='task t-'+def.type;
+  el.innerHTML='<span class="emo" aria-hidden="true">'+def.ico+'</span><span class="txt"><span class="tag">'+TAG[def.type]+'</span><span class="tname">'+def.name+'</span><span class="dots">'+
+    def.steps.map(()=>'<i></i>').join('')+'</span></span><span class="pbar"><b></b></span>';
+  const t={id:++uid,def:def,step:0,t:tmax,tmax:tmax,el:el,bar:$('.pbar b',el),dots:[].slice.call(el.querySelectorAll('.dots i')),lvl:0,dead:false};
+  setStep(t);
+  el.addEventListener('click',()=>openTask(t));
+  room.slot.appendChild(el); room.task=t; G.tasks.push(t);
+  if(def.say) say(def.say);
+  if(def.type==='sick') sfx('sick');
+  if(G.scene) renderQueue();
+  return true;
+}
+function setStep(t){
+  t.dots.forEach((d,i)=>d.classList.toggle('on',i<t.step));
+  t.el.setAttribute('aria-label',t.def.name+' di '+ROOMS[t.def.room].name+'. Ketuk untuk pergi ke sana.');
+}
+function removeTask(t){
+  t.el.classList.add('leave'); setTimeout(()=>t.el.remove(),230);
+  G.rooms[t.def.room].task=null; G.tasks=G.tasks.filter(x=>x!==t);
+  if(G.scene&&G.scene!==t) renderQueue();
+}
+function adj(m,d){if(m.indexOf('c')>-1)G.clean=clamp(G.clean+d);if(m.indexOf('h')>-1)G.happy=clamp(G.happy+d);}
+
+/* ---------- Walking and scenes ---------- */
+function goTo(roomId,cb){
+  clearTimeout(G.walkT);
+  if(G.mom===roomId){cb();return;}
+  const a=G.rooms[G.mom].el, b=G.rooms[roomId].el;
+  const dist=Math.hypot(a.offsetLeft-b.offsetLeft,a.offsetTop-b.offsetTop);
+  const dur=clamp(.4+dist/520,.45,1.1);
+  G.energy=Math.max(0,G.energy-G.L.walk);
+  if(G.energy<=0){fail('energy');return;}
+  G.mom=roomId; G.walking=true;
+  void G.pin.offsetWidth;
+  setPin(roomId,false,dur);
+  G.pin.classList.add('walk'); sfx('walk');
+  G.walkT=setTimeout(()=>{G.walking=false;G.pin.classList.remove('walk');cb();},dur*1000);
+}
+function openTask(t){
+  if(!G||G.paused||G.over||G.walking||G.busy||t.dead||G.scene) return;
+  sfx('tap');
+  goTo(t.def.room,()=>{if(G&&!G.paused&&!G.over&&!t.dead) enterScene(t);});
+}
+function applyTint(){
+  if(!G||!G.scene) return;
+  $('#stage').style.setProperty('--tint',G.scene.def.type==='sick'?'rgba(150,120,220,.22)':TINT[Math.max(0,G.phase)]);
+}
+function enterScene(t){
+  const d=t.def, r=ROOMS[d.room];
+  G.scene=t;
+  $('#house-block').hidden=true; $('#scene').hidden=false;
+  const st=$('#stage'); st.style.setProperty('--wall',r.wall); st.style.setProperty('--floor',r.floor);
+  $('#sc-deco').innerHTML=r.deco.map(x=>'<span style="left:'+x[1]+'%;top:'+x[2]+'%;font-size:'+x[3]+'px">'+x[0]+'</span>').join('');
+  $('#sc-name').textContent=r.name+' · '+d.name;
+  $('#sc-act').textContent='';
+  applyTint(); say(d.story); sfx('enter');
+  renderStep(t); renderQueue();
+}
+function leaveScene(){
+  G.scene=null;
+  $('#scene').hidden=true; $('#house-block').hidden=false;
+  setPin(G.mom,true);
+}
+function setFocus(e){const f=$('#sc-focus');f.textContent=e;f.classList.remove('bump');void f.offsetWidth;f.classList.add('bump');}
+function renderStep(t){
+  const d=t.def, s=d.steps[t.step];
+  $('#sc-instr').textContent=s.do;
+  $('#sc-dots').innerHTML=d.steps.map((_,i)=>'<i class="'+(i<t.step?'on':'')+'"></i>').join('');
+  setFocus(d.focus[t.step]);
+  const pool=ROOMS[d.room].pool.filter(e=>e!==s.use);
+  const opts=shuffle([s.use].concat(shuffle(pool).slice(0,G.L.opts-1)));
+  const tray=$('#tray'); tray.innerHTML='';
+  opts.forEach(e=>{
+    const b=document.createElement('button'); b.type='button';
+    b.className='opt'+(G.L.hint&&e===s.use?' hint':''); b.textContent=e; b.setAttribute('aria-label','Alat '+e);
+    b.addEventListener('click',()=>pickOpt(t,b,e===s.use));
+    tray.appendChild(b);
+  });
+}
+function renderQueue(){
+  const q=$('#queue'); G.q={};
+  const others=G.tasks.filter(x=>x!==G.scene&&!x.dead);
+  if(!others.length){q.innerHTML='<small>Tiada tugasan lain. Hebat! 🎉</small>';return;}
+  q.innerHTML='';
+  others.forEach(x=>{
+    const b=document.createElement('button'); b.type='button'; b.className='q t-'+x.def.type;
+    b.setAttribute('aria-label','Pergi ke '+ROOMS[x.def.room].name+': '+x.def.name);
+    b.innerHTML='<span>'+x.def.ico+'</span><small>'+ROOMS[x.def.room].name+'</small><i class="qb"><b></b></i>';
+    G.q[x.id]=$('.qb b',b);
+    b.addEventListener('click',()=>switchTo(x));
+    q.appendChild(b);
+  });
+}
+function switchTo(x){
+  if(!G||G.paused||G.over||G.busy||G.walking||x.dead) return;
+  leaveScene(); openTask(x);
+}
+function pickOpt(t,b,ok){
+  if(!G||G.paused||G.over||G.busy||t.dead||G.scene!==t) return;
+  G.energy=Math.max(0,G.energy-G.L.cost);
+  if(!ok){
+    sfx('bad'); t.t-=1.5; G.combo=0;
+    b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+    say('Bukan itu, ibu! 😅');
+    if(G.energy<=0) fail('energy');
+    return;
+  }
+  sfx('ok'); b.classList.add('right');
+  const a=$('#sc-act'); a.textContent=t.def.steps[t.step].use; a.classList.remove('bump'); void a.offsetWidth; a.classList.add('bump');
+  burst($('#sc-focus'),['✨','💖'],3);
+  t.step++; setStep(t);
+  if(t.step>=t.def.steps.length) finishScene(t); else renderStep(t);
+  if(G&&!G.over&&G.energy<=0) fail('energy');
+}
+function finishScene(t){
+  setFocus(t.def.focus[t.def.steps.length]);
+  $('#sc-dots').innerHTML=t.def.steps.map(()=>'<i class="on"></i>').join('');
+  $('#tray').innerHTML='';
+  complete(t,$('#sc-focus'));
+  G.busy=true; $('#sc-done').hidden=false;
+  setTimeout(()=>{
+    if(!G) return;
+    G.busy=false; $('#sc-done').hidden=true;
+    if(G.scene===t&&!G.over) leaveScene();
+  },900);
+}
+
+function complete(t,anchor){
+  t.dead=true;
+  G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo);
+  const mult=Math.min(4,1+Math.floor(G.combo/3));
+  const pts=Math.round((t.def.steps.length*10+Math.max(0,t.t/t.tmax)*10)*mult);
+  G.score+=pts; G.done++;
+  adj(t.def.m,t.def.type==='sick'?16:7);
+  if(t.def.type==='sick') G.clean=clamp(G.clean+4);
+  const an=anchor||t.el;
+  floatText(an,'+'+pts); burst(an,['✨','💖','⭐','🌸'],6);
+  sfx('done');
+  say(G.combo>=3&&G.combo%3===0?'Combo x'+mult+'! Laju betul tangan ibu.':pick(DONE_SAY));
+  removeTask(t);
+}
+function miss(t){
+  t.dead=true;
+  G.missed++; G.combo=0;
+  const sick=t.def.type==='sick';
+  adj(t.def.m,sick?-16:-9);
+  if(sick) G.clean=clamp(G.clean-6);
+  sfx('miss');
+  if(G.scene===t){floatText($('#sc-focus'),'💔','bad');leaveScene();} else floatText(t.el,'💔','bad');
+  say(sick?'Alamak, dia masih tak sihat...':pick(MISS_SAY));
+  removeTask(t);
+}
+
+function spawnBonus(){
+  const b=document.createElement('button'); b.type='button'; b.className='bonus'; b.textContent='🧋'; b.setAttribute('aria-label','Air dari suami, ketuk untuk tenaga');
+  b.style.left=rnd(8,78)+'%'; b.style.top=rnd(8,80)+'%';
+  b.addEventListener('click',()=>{
+    if(!G||G.paused||G.over||!G.bonus) return;
+    G.energy=clamp(G.energy+14); G.score+=5;
+    sfx('bonus'); burst(b,['💕','🧋','✨'],5); say('Suami buatkan air! 💕');
+    b.remove(); G.bonus=null;
+  });
+  $('#play').appendChild(b);
+  G.bonus={el:b,t:4.5};
+}
+
+function burst(el,emos,n){
+  const hr=$('#play').getBoundingClientRect(), r=el.getBoundingClientRect();
+  const cx=r.left-hr.left+r.width/2, cy=r.top-hr.top+r.height/2;
+  for(let i=0;i<n;i++){
+    const s=document.createElement('span'); s.className='spark'; s.textContent=pick(emos);
+    s.style.left=cx+'px'; s.style.top=cy+'px';
+    const a=Math.random()*Math.PI*2, d=rnd(34,72);
+    s.style.setProperty('--dx',(Math.cos(a)*d)+'px'); s.style.setProperty('--dy',(Math.sin(a)*d-18)+'px');
+    fx.appendChild(s); setTimeout(()=>s.remove(),900);
+  }
+}
+function floatText(el,text,cls){
+  const hr=$('#play').getBoundingClientRect(), r=el.getBoundingClientRect();
+  const s=document.createElement('span'); s.className='ftxt'+(cls?' '+cls:''); s.textContent=text;
+  s.style.left=(r.left-hr.left+r.width/2)+'px'; s.style.top=(r.top-hr.top+r.height/2)+'px';
+  fx.appendChild(s); setTimeout(()=>s.remove(),950);
+}
+
+function clockLabel(prog){
+  const hour=6+prog*16, h=Math.floor(hour), m=Math.floor((hour-h)*6)*10;
+  const h12=h>12?h-12:h, part=h<12?'pagi':h<15?'tengah hari':h<19?'petang':'malam';
+  return G.day+', '+h12+':'+(m<10?'0':'')+m+' '+part;
+}
+let lastScore=-1,lastCombo=-1;
+function updateHud(){
+  const prog=Math.min(1,G.time/G.L.dur);
+  $('#b-energy').style.width=G.energy+'%'; $('#b-clean').style.width=G.clean+'%'; $('#b-happy').style.width=G.happy+'%';
+  $('#mt-energy').classList.toggle('low',G.energy<25);
+  $('#mt-clean').classList.toggle('low',G.clean<25);
+  $('#mt-happy').classList.toggle('low',G.happy<25);
+  $('#mood').textContent=G.energy>60?'✨':G.energy>30?'💦':'😵‍💫';
+  $('#day-fill').style.width=(prog*100)+'%';
+  $('#sun').style.left=(prog*100)+'%';
+  $('#sun').textContent=G.phase>=3?'🌙':G.phase===2?'🌇':'☀️';
+  $('#h-clock').textContent=clockLabel(prog);
+  [].forEach.call($('#phases').children,(s,i)=>s.classList.toggle('on',i===G.phase));
+  if(G.score!==lastScore){lastScore=G.score;$('#h-score').textContent=G.score;}
+  if(G.combo!==lastCombo){lastCombo=G.combo;$('#h-combo').textContent=G.combo>=3?'🔥 x'+Math.min(4,1+Math.floor(G.combo/3)):'';}
+  $('#rest').style.setProperty('--cd',G.restCd>0?(G.restCd/G.L.rest[1]).toFixed(3):0);
+}
+
+function update(dt){
+  const L=G.L; G.time+=dt;
+  const prog=G.time/L.dur, ph=Math.min(3,Math.floor(prog*4));
+  if(ph!==G.phase){const first=G.phase<0;G.phase=ph;applyTint();if(!first){say(PHASE_SAY[ph]);sfx('bell');}}
+  G.energy=clamp(G.energy+L.regen*dt);
+  G.clean=clamp(G.clean-L.decay*dt); G.happy=clamp(G.happy-L.decay*dt);
+  G.restCd=Math.max(0,G.restCd-dt);
+  G.tasks.slice().forEach(t=>{
+    t.t-=dt; const f=t.t/t.tmax, pct=Math.max(0,f*100)+'%';
+    t.bar.style.width=pct;
+    const qb=G.q[t.id]; if(qb) qb.style.width=pct;
+    const lv=f<.25?2:f<.5?1:0;
+    if(lv!==t.lvl){t.lvl=lv;t.el.classList.toggle('warn',lv===1);t.el.classList.toggle('crit',lv===2);}
+    if(G.scene===t){
+      $('#sc-bar').style.width=pct;
+      const tm=$('#sc-time'); tm.classList.toggle('warn',lv===1); tm.classList.toggle('crit',lv===2);
+    }
+    if(t.t<=0&&!t.dead) miss(t);
+  });
+  G.nextSpawn-=dt;
+  if(G.nextSpawn<=0){ if(G.tasks.length<L.max&&spawn()) G.nextSpawn=rnd(L.spawn[0],L.spawn[1]); else G.nextSpawn=.4; }
+  G.nextBonus-=dt;
+  if(G.nextBonus<=0&&!G.bonus){spawnBonus();G.nextBonus=rnd(L.bonus[0],L.bonus[1]);}
+  if(G.bonus){G.bonus.t-=dt; if(G.bonus.t<=0){G.bonus.el.remove();G.bonus=null;}}
+  if(G.energy<25&&G.time-G.lowSaid>9){G.lowSaid=G.time;say('Ibu penat... tekan Rehat 🍵');}
+  updateHud();
+  if(G.energy<=0) return fail('energy');
+  if(G.clean<=0) return fail('clean');
+  if(G.happy<=0) return fail('happy');
+  if(G.time>=L.dur) finish();
+}
+function frame(ts){
+  if(!G||G.paused||G.over) return;
+  const dt=Math.min(.12,(ts-last)/1000); last=ts;
+  update(dt);
+  if(G&&!G.over&&!G.paused) G.raf=requestAnimationFrame(frame);
+}
+
+function pauseGame(){
+  if(!G||G.over||G.paused||$('#game').hidden) return;
+  G.paused=true; cancelAnimationFrame(G.raf); musicOff();
+  showSheet('<div class="big">☕</div><h2>Rehat sekejap</h2><p>Masa berhenti. Ambil nafas dulu, ibu.</p>'+
+    '<div class="toggles">'+togInner()+'</div>'+
+    '<button class="btn" type="button" data-act="resume">Sambung ▶</button>'+
+    '<button class="btn alt" type="button" data-act="menu">Keluar ke menu</button>');
+}
+function resumeGame(){
+  if(!G||!G.paused) return;
+  hideSheet(); G.paused=false; musicOn(); last=performance.now(); G.raf=requestAnimationFrame(frame);
+}
+function doRest(){
+  if(!G||G.paused||G.over||G.restCd>0) return;
+  G.energy=clamp(G.energy+G.L.rest[0]); G.restCd=G.L.rest[1];
+  say('Hirup teh sekejap... 🍵'); sfx('rest'); burst($('#rest'),['☕','💨','✨'],4);
+  updateHud();
+}
+
+function fail(reason){ if(!G||G.over) return; G.over=true; cancelAnimationFrame(G.raf); musicOff(); updateHud(); showResult(false,reason); }
+function finish(){ if(!G||G.over) return; G.over=true; cancelAnimationFrame(G.raf); musicOff(); showResult(true); }
+
+function showResult(ok,reason){
+  const L=G.L, avg=(G.energy+G.clean+G.happy)/3;
+  const stars=!ok?0:avg>=70?3:avg>=50?2:1;
+  save.best[L.id]=Math.max(save.best[L.id]||0,G.score);
+  if(ok) save.stars[L.id]=Math.max(save.stars[L.id]||0,stars);
+  persist();
+  sfx(ok?'win':'lose');
+  const next=LEVELS[LEVELS.indexOf(L)+1];
+  const title=stars===3?'Ibu Superstar! 🌟':stars===2?'Hebat, ibu!':stars===1?'Hari ini berjaya 😮‍💨':'Ibu perlu rehat';
+  const msg=ok?(stars===3?'Rumah kemas, semua gembira, ibu masih bertenaga.':stars===2?'Hampir sempurna. Cuba jaga tenaga sikit lagi.':'Selamat sampai malam. Esok boleh lebih baik.'):FAIL_SAY[reason];
+  showSheet('<div class="stars" aria-label="'+stars+' bintang">'+'★'.repeat(stars)+'<span class="off">'+'★'.repeat(3-stars)+'</span></div>'+
+    '<h2>'+title+'</h2><p>'+msg+'</p>'+
+    '<div class="stats"><div><b>'+G.score+'</b><small>Skor</small></div><div><b>'+G.done+'</b><small>Tugas siap</small></div>'+
+    '<div><b>'+G.missed+'</b><small>Terlepas</small></div><div><b>x'+Math.min(4,1+Math.floor(G.maxCombo/3))+'</b><small>Combo tertinggi</small></div></div>'+
+    '<button class="btn" type="button" data-act="go" data-lvl="'+L.id+'">Main lagi</button>'+
+    (ok&&next?'<button class="btn" type="button" data-act="go" data-lvl="'+next.id+'">Level '+next.name+' ▶</button>':'')+
+    '<button class="btn alt" type="button" data-act="menu">Menu</button>'+
+    '<p class="thanks">Setiap hari, ibu memang superstar. Terima kasih sebab jaga semua orang. 💖</p>');
+}
+
+function toMenu(){
+  if(G){cancelAnimationFrame(G.raf);clearTimeout(G.walkT);G.over=true;}
+  musicOff(); hideSheet(); $('#game').hidden=true; $('#menu').hidden=false; renderMenu(); window.scrollTo(0,0);
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click',e=>{
+  audio();
+  const t=e.target.closest('[data-av],[data-lvl],[data-act],[data-tog],#pause,#rest,#sc-back'); if(!t) return;
+  if(t.id==='pause') return pauseGame();
+  if(t.id==='rest') return doRest();
+  if(t.id==='sc-back'){
+    if(G&&!G.over&&!G.paused&&!G.busy&&G.scene){sfx('click');leaveScene();say('Tugasan itu masih menunggu...');}
+    return;
+  }
+  if(t.dataset.tog){
+    const k=t.dataset.tog; save[k]=!save[k]; persist(); refreshToggles();
+    if(k==='music'){ if(save.music&&G&&!G.paused&&!G.over&&!$('#game').hidden) musicOn(); else if(!save.music) musicOff(); }
+    return sfx('click');
+  }
+  if(t.dataset.av){save.av=t.dataset.av;persist();sfx('click');return renderMenu();}
+  sfx('click');
+  const act=t.dataset.act;
+  if(act==='go'){const L=levelById(t.dataset.lvl);if(G&&!G.over){G.over=true;cancelAnimationFrame(G.raf);clearTimeout(G.walkT);}return startGame(L);}
+  if(act==='close') return hideSheet();
+  if(act==='resume') return resumeGame();
+  if(act==='menu') return toMenu();
+  if(t.dataset.lvl) return openIntro(t.dataset.lvl);
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
+window.addEventListener('resize',()=>{if(G&&!$('#game').hidden&&!$('#house-block').hidden&&G.pin) setPin(G.mom,true);});
+
+renderMenu();
+})();
+</script>
+
+</body></html>
